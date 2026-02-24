@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORE.OS | UI/UX & Web Architecture</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">CORE.OS</div>
+            <div class="splash-loader">
+                <div class="loader-bar"></div>
+            </div>
+            <div class="splash-text">INITIALIZING SYSTEM...</div>
+        </div>
+    </div>
+
+    <div id="scroll-progress"></div>
+
+    <!-- Background Particles -->
+    <canvas id="particles-bg"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.5;"></canvas>
+
+    <nav class="glass glass-nav fade-in-down" style="animation-delay: 2.8s;">
+        <div class="brand">CORE.OS</div>
+        <div class="nav-links">
+            <a href="#work" class="nav-item">Work</a>
+            <a href="#skills" class="nav-item">Expertise</a>
+            <a href="#about" class="nav-item">Identity</a>
+            <a href="#contact" class="nav-item">Signal</a>
+        </div>
+        <button class="btn-minimal">Initiate Project</button>
+    </nav>
+
+    <main>
+        <!-- Hero Section with Globe -->
+        <section id="hero" class="hero">
+            <div id="globe-container"></div>
+
+            <!-- HUD Info Pop-up -->
+            <div class="hud-container" id="hud-root">
+                <div id="hud-popup" class="glass hud-popup">
+                    <h4 id="hud-title">PROJECT_ID</h4>
+                    <p id="hud-desc" class="typewriter">Synchronizing data stream...</p>
+                </div>
+                <svg class="hud-connector">
+                    <path id="hud-line" class="connector-line" d="M0,0 L0,0" />
+                    <circle id="hud-dot" class="connector-dot" cx="0" cy="0" r="2" />
+                </svg>
+            </div>
+
+            <div class="orbital-text-container" id="orbital-root"></div>
+
+            <div class="hero-content">
+                <h1 class="reveal-text glitch" data-text="ARCHITECTING THE FUTURE">ARCHITECTING THE FUTURE</h1>
+                <p>UI/UX • PRODUCT DESIGN • WEB ARCHITECTURE</p>
+                <div style="margin-top: 2rem;">
+                    <button class="btn-minimal roll-in" style="transition-delay: 0.5s">Explore System</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Work Section -->
+        <section id="work">
+            <h2 class="section-title reveal-text">Selected Work</h2>
+            <div class="grid-container stagger-container">
+                <div class="card stagger-item roll-in" style="--delay: 0.1s">
+                    <h3>01. QUANTUM UI</h3>
+                    <p class="roll-in" style="transition-delay: 0.3s">Research-led design system for decentralized
+                        financial architectures. Focused on cognitive load
+                        reduction and high-density data visualization.</p>
+                </div>
+                <div class="card stagger-item roll-in" style="--delay: 0.2s">
+                    <h3>02. HYPERSPACE.WEB</h3>
+                    <p class="roll-in" style="transition-delay: 0.4s">Next-gen e-commerce engine utilizing WebGL for
+                        immersive product storytelling. 40% increase in
+                        user retention through spatial interactions.</p>
+                </div>
+                <div class="card stagger-item roll-in" style="--delay: 0.3s">
+                    <h3>03. NEURAL DASH</h3>
+                    <p class="roll-in" style="transition-delay: 0.5s">Minimalist dashboard for AI management.
+                        Prioritizing accessibility and dark-mode ergonomics for
+                        extended professional use.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expertise Section -->
+        <section id="skills">
+            <h2 class="section-title reveal-text">Core Expertise</h2>
+            <div class="grid-container stagger-container">
+                <div class="card stagger-item roll-in" style="--delay: 0.1s">
+                    <h3>UI/UX STRATEGY</h3>
+                    <p class="roll-in" style="transition-delay: 0.3s">User-centric research, persona mapping, and
+                        high-fidelity prototyping. Building interfaces that
+                        solve problems through behavioral psychology.</p>
+                </div>
+                <div class="card stagger-item roll-in" style="--delay: 0.2s">
+                    <h3>FRONT-END DEV</h3>
+                    <p class="roll-in" style="transition-delay: 0.4s">Clean, semantic code using modern frameworks.
+                        Specializing in Three.js, performance optimization,
+                        and responsive architectures.</p>
+                </div>
+                <div class="card stagger-item roll-in" style="--delay: 0.3s">
+                    <h3>SYSTEM DESIGN</h3>
+                    <p class="roll-in" style="transition-delay: 0.5s">Scalable component libraries and design tokens.
+                        Ensuring visual consistency across complex
+                        multi-platform environments.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Identity Section -->
+        <section id="about">
+            <h2 class="section-title reveal-text">Identity</h2>
+            <div style="max-width: 800px; margin: 0 auto;" class="reveal-blur">
+                <p class="reveal-text"
+                    style="font-size: 1.25rem; color: var(--text-dim); border-left: 2px solid var(--primary); padding-left: 2rem; line-height: 1.8;">
+                    I am a designer-developer hybrid focused on creating high-performance digital experiences. My work
+                    bridges the gap between aesthetic theory and technical execution, delivering interfaces that feel as
+                    good as they look.
+                </p>
+            </div>
+        </section>
+
+        <!-- Signal Section -->
+        <section id="contact">
+            <h2 class="section-title reveal-text">Send Signal</h2>
+            <div class="glass card reveal-text stagger-container"
+                style="max-width: 700px; margin: 0 auto; padding: 3rem;">
+                <form id="contact-form" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <input type="text" placeholder="IDENTITY" class="glass stagger-item"
+                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);">
+                    <input type="email" placeholder="ENCRYPTED EMAIL" class="glass stagger-item"
+                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);">
+                    <textarea placeholder="TRANSMISSION" rows="5" class="glass stagger-item"
+                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);"></textarea>
+                    <button type="submit" class="btn-minimal stagger-item"
+                        style="width: 100%; padding: 1.2rem; font-size: 1rem;">Transmit</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="globe.js"></script>
+    <script src="particles.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
