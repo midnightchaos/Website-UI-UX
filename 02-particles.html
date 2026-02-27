@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Particle System — WEBCRAFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { background: #010a14; color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; height: 100vh; cursor: none; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; }
+
+  #cursor { width:8px;height:8px;background:#00e5ff;border-radius:50%;position:fixed;pointer-events:none;z-index:999;mix-blend-mode:screen; }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1.5rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(1,10,20,0.9), transparent);
+  }
+  .back { font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;color:rgba(0,229,255,0.6);text-decoration:none;border:1px solid rgba(0,229,255,0.3);padding:0.4em 0.9em;transition:all 0.2s; }
+  .back:hover{color:#00e5ff;border-color:#00e5ff;}
+  .nav-title { font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:rgba(255,255,255,0.3); }
+
+  .hud {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(1,10,20,0.95), transparent);
+    z-index: 10;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+  }
+  .hud-left {}
+  .tag { font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:#00e5ff;border:1px solid #00e5ff;display:inline-block;padding:0.3em 0.7em;margin-bottom:0.8rem; }
+  h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight:700; letter-spacing:0.05em; line-height:1; margin-bottom:0.8rem; }
+  h1 span { color: #00e5ff; }
+  .desc { font-size: 0.9rem; line-height: 1.7; color: rgba(255,255,255,0.5); font-weight:300; max-width:500px; }
+
+  .hud-right { display:flex;flex-direction:column;justify-content:flex-end;gap:0.5rem; }
+  .stat-row { display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06);padding:0.4rem 0; }
+  .stat-label { font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3); }
+  .stat-val { font-size:1.1rem;font-weight:600;color:#00e5ff; }
+
+  .controls-bar {
+    position: fixed; top: 50%; right: 2rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .ctrl { display:flex;flex-direction:column;align-items:center;gap:0.3rem; }
+  .ctrl input[type=range] { writing-mode: vertical-lr; direction: rtl; width:4px;height:80px;accent-color:#00e5ff;cursor:pointer; }
+  .ctrl-lbl { font-family:'Space Mono',monospace;font-size:0.45rem;letter-spacing:0.1em;color:rgba(255,255,255,0.3);transform:rotate(-90deg);white-space:nowrap; }
+
+  .mode-btns {
+    position: fixed; top: 50%; left: 2rem;
+    transform: translateY(-50%);
+    z-index: 10; display:flex;flex-direction:column;gap:0.5rem;
+  }
+  .mode-btn { font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.1em;background:rgba(0,0,0,0.5);border:1px solid rgba(0,229,255,0.2);color:rgba(255,255,255,0.4);padding:0.5em 0.8em;cursor:pointer;transition:all 0.2s; }
+  .mode-btn:hover,.mode-btn.active{border-color:#00e5ff;color:#00e5ff;background:rgba(0,229,255,0.05);}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="cursor"></div>
+
+<nav>
+  <a href="index.html" class="back">← BACK</a>
+  <span class="nav-title">02 / PARTICLE SYSTEM</span>
+</nav>
+
+<div class="mode-btns">
+  <button class="mode-btn active" onclick="setMode('float')">FLOAT</button>
+  <button class="mode-btn" onclick="setMode('explode')">BURST</button>
+  <button class="mode-btn" onclick="setMode('vortex')">VORTEX</button>
+  <button class="mode-btn" onclick="setMode('grid')">GRID</button>
+</div>
+
+<div class="controls-bar">
+  <div class="ctrl">
+    <input type="range" id="countSlider" min="50" max="500" value="200" oninput="updateCount(this.value)">
+    <div class="ctrl-lbl">COUNT</div>
+  </div>
+  <div class="ctrl">
+    <input type="range" id="speedSlider" min="1" max="10" value="4">
+    <div class="ctrl-lbl">SPEED</div>
+  </div>
+</div>
+
+<div class="hud">
+  <div class="hud-left">
+    <div class="tag">HTML5 CANVAS API</div>
+    <h1>PARTICLE<br><span>SYSTEM</span></h1>
+    <p class="desc">Canvas 2D rendering context drawing thousands of circular paths per frame. Each particle has independent velocity, color, and size. Mouse interaction applies repulsion force using vector distance math.</p>
+  </div>
+  <div class="hud-right">
+    <div class="stat-row"><span class="stat-label">PARTICLES</span><span class="stat-val" id="statCount">200</span></div>
+    <div class="stat-row"><span class="stat-label">FPS</span><span class="stat-val" id="statFps">60</span></div>
+    <div class="stat-row"><span class="stat-label">CONNECTIONS</span><span class="stat-val" id="statConn">0</span></div>
+    <div class="stat-row"><span class="stat-label">MODE</span><span class="stat-val" id="statMode">FLOAT</span></div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const cur = document.getElementById('cursor');
+  let W, H, particles = [], mode = 'float', mouse = {x:-999,y:-999};
+  let frames=0, fps=60, lastTime=performance.now(), connCount=0;
+
+  function resize() { W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  resize(); window.addEventListener('resize', () => { resize(); if(mode==='grid') initGrid(); });
+
+  document.addEventListener('mousemove', e => {
+    mouse.x=e.clientX; mouse.y=e.clientY;
+    cur.style.left=e.clientX-4+'px'; cur.style.top=e.clientY-4+'px';
+  });
+
+  const COLORS = ['#00e5ff','#ff3c00','#b8ff57','#ff80ff','#ffe066','#ffffff'];
+
+  class Particle {
+    constructor(x,y) {
+      this.x = x ?? Math.random()*W;
+      this.y = y ?? Math.random()*H;
+      this.ox = this.x; this.oy = this.y;
+      this.vx = (Math.random()-0.5)*2;
+      this.vy = (Math.random()-0.5)*2;
+      this.size = Math.random()*2+0.5;
+      this.color = COLORS[Math.floor(Math.random()*COLORS.length)];
+      this.angle = Math.random()*Math.PI*2;
+      this.angleSpeed = (Math.random()-0.5)*0.02;
+    }
+    update() {
+      const spd = parseFloat(document.getElementById('speedSlider').value)/4;
+      if(mode==='float') {
+        const dx=mouse.x-this.x, dy=mouse.y-this.y, d=Math.sqrt(dx*dx+dy*dy);
+        if(d<120){this.vx-=dx/d*0.8*spd; this.vy-=dy/d*0.8*spd;}
+        this.vx*=0.97; this.vy*=0.97;
+        this.x+=this.vx*spd; this.y+=this.vy*spd;
+        if(this.x<0||this.x>W)this.vx*=-1;
+        if(this.y<0||this.y>H)this.vy*=-1;
+      } else if(mode==='explode') {
+        const dx=this.x-W/2, dy=this.y-H/2, d=Math.sqrt(dx*dx+dy*dy);
+        this.vx+=dx/d*0.2*spd; this.vy+=dy/d*0.2*spd;
+        this.vx*=0.95; this.vy*=0.95;
+        this.x+=this.vx; this.y+=this.vy;
+        if(this.x<0||this.x>W||this.y<0||this.y>H){this.x=W/2+(Math.random()-0.5)*20;this.y=H/2+(Math.random()-0.5)*20;this.vx=(Math.random()-0.5)*5;this.vy=(Math.random()-0.5)*5;}
+      } else if(mode==='vortex') {
+        const dx=this.x-W/2, dy=this.y-H/2, d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+        const nx=dx/d, ny=dy/d;
+        this.vx+=(-ny*2-nx*0.5)*spd*0.3; this.vy+=(nx*2-ny*0.5)*spd*0.3;
+        this.vx*=0.97; this.vy*=0.97;
+        this.x+=this.vx; this.y+=this.vy;
+        if(this.x<0||this.x>W||this.y<0||this.y>H){this.x=W/2+(Math.random()-0.5)*100;this.y=H/2+(Math.random()-0.5)*100;}
+      } else if(mode==='grid') {
+        const dx=this.ox-this.x, dy=this.oy-this.y;
+        const mdx=mouse.x-this.x, mdy=mouse.y-this.y, md=Math.sqrt(mdx*mdx+mdy*mdy);
+        if(md<100){this.x-=mdx/md*3*spd;this.y-=mdy/md*3*spd;}
+        else{this.x+=dx*0.1*spd;this.y+=dy*0.1*spd;}
+      }
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+      ctx.fillStyle=this.color;
+      ctx.globalAlpha=0.85;
+      ctx.fill();
+      ctx.globalAlpha=1;
+    }
+  }
+
+  function initParticles(n=200) {
+    particles=[];
+    for(let i=0;i<n;i++) particles.push(new Particle());
+  }
+
+  function initGrid() {
+    const n = parseInt(document.getElementById('countSlider').value);
+    const cols = Math.ceil(Math.sqrt(n*W/H));
+    const rows = Math.ceil(n/cols);
+    const px = W/(cols+1), py = H/(rows+1);
+    particles=[];
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) {
+      if(particles.length>=n) break;
+      const p = new Particle(px*(c+1), py*(r+1));
+      p.ox=px*(c+1); p.oy=py*(r+1);
+      particles.push(p);
+    }
+  }
+
+  function setMode(m) {
+    mode=m;
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('statMode').textContent=m.toUpperCase();
+    if(m==='grid') initGrid();
+    else if(m==='explode') { particles.forEach(p=>{p.x=W/2+(Math.random()-0.5)*20;p.y=H/2+(Math.random()-0.5)*20;p.vx=(Math.random()-0.5)*5;p.vy=(Math.random()-0.5)*5;}); }
+  }
+
+  function updateCount(v) {
+    document.getElementById('statCount').textContent=v;
+    if(mode==='grid') initGrid();
+    else { while(particles.length<v) particles.push(new Particle()); particles.length=v; }
+  }
+
+  initParticles(200);
+
+  let lastFpsUpdate=0;
+  function draw(ts) {
+    frames++;
+    if(ts-lastFpsUpdate>500){fps=Math.round(frames/((ts-lastFpsUpdate||1)*0.001));frames=0;lastFpsUpdate=ts;document.getElementById('statFps').textContent=fps;}
+    ctx.fillStyle='rgba(1,10,20,0.2)';
+    ctx.fillRect(0,0,W,H);
+    connCount=0;
+    for(let i=0;i<particles.length;i++) {
+      particles[i].update();
+      particles[i].draw();
+      for(let j=i+1;j<particles.length;j++) {
+        const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<90){
+          ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=particles[i].color;ctx.globalAlpha=(1-d/90)*0.25;ctx.lineWidth=0.5;ctx.stroke();ctx.globalAlpha=1;
+          connCount++;
+        }
+      }
+    }
+    document.getElementById('statConn').textContent=connCount;
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+</script>
+</body>
+</html>

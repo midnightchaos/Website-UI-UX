@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glitch — WEBCRAFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { background:#070007; color:#fff; font-family:'Space Mono',monospace; overflow:hidden; height:100vh; cursor:none; }
+
+  #cursor { width:14px;height:14px;background:transparent;border:2px solid #ff3c00;position:fixed;pointer-events:none;z-index:999;transition:transform 0.05s; }
+
+  /* Scanlines */
+  .scanlines { position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,60,0,0.04) 3px,rgba(255,60,0,0.04) 4px);pointer-events:none;z-index:50;animation:scanlinesMove 8s linear infinite; }
+  @keyframes scanlinesMove { 0%{background-position:0 0} 100%{background-position:0 100px} }
+
+  /* Random horizontal tear */
+  .tear { position:fixed;left:0;right:0;height:3px;background:rgba(255,60,0,0.8);z-index:40;pointer-events:none;animation:tearAnim 4s step-end infinite; }
+  @keyframes tearAnim {
+    0%,100%{top:-10px;opacity:0}
+    10%{top:30%;opacity:1}11%{top:30%;opacity:0}
+    25%{top:60%;opacity:1}26%{top:60%;opacity:0}
+    45%{top:80%;opacity:1}46%{top:80%;opacity:0}
+    70%{top:15%;opacity:1}71%{top:15%;opacity:0}
+    85%{top:45%;opacity:1}86%{top:45%;opacity:0}
+  }
+
+  nav {
+    position:fixed;top:0;left:0;right:0;padding:1.5rem 2rem;
+    display:flex;justify-content:space-between;align-items:center;z-index:60;
+  }
+  .back { font-size:0.6rem;letter-spacing:0.15em;color:rgba(255,60,0,0.7);text-decoration:none;border:1px solid rgba(255,60,0,0.4);padding:0.4em 0.9em;transition:all 0.2s; }
+  .back:hover{color:#ff3c00;border-color:#ff3c00;}
+  .nav-title { font-size:0.6rem;letter-spacing:0.2em;color:rgba(255,255,255,0.3); }
+
+  /* Big glitch text */
+  .center-stage { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:10; }
+
+  .glitch-word {
+    font-family:'Black Han Sans',sans-serif;
+    font-size:clamp(5rem,18vw,14rem);
+    font-weight:900;
+    letter-spacing:-0.02em;
+    line-height:0.9;
+    position:relative;
+    color:#fff;
+    user-select:none;
+  }
+  .glitch-word::before {
+    content:attr(data-text);
+    position:absolute;top:0;left:0;
+    color:#ff3c00;
+    animation:glitchR 2s infinite;
+    clip-path:polygon(0 0,100% 0,100% 35%,0 35%);
+  }
+  .glitch-word::after {
+    content:attr(data-text);
+    position:absolute;top:0;left:0;
+    color:#00e5ff;
+    animation:glitchB 2s infinite;
+    clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);
+  }
+  @keyframes glitchR {
+    0%,89%,100%{transform:translate(0);filter:none;}
+    90%{transform:translate(-6px,2px);filter:blur(0.5px);}
+    92%{transform:translate(6px,-2px);}
+    94%{transform:translate(-4px,1px);}
+    96%{transform:translate(4px,-1px);filter:blur(1px);}
+    98%{transform:translate(-2px,3px);filter:none;}
+  }
+  @keyframes glitchB {
+    0%,89%,100%{transform:translate(0);filter:none;}
+    90%{transform:translate(6px,-2px);}
+    92%{transform:translate(-6px,2px);filter:blur(0.5px);}
+    94%{transform:translate(4px,-1px);}
+    96%{transform:translate(-4px,1px);filter:blur(1px);}
+    98%{transform:translate(2px,-3px);filter:none;}
+  }
+
+  .subtitle {
+    font-size:0.7rem;letter-spacing:0.3em;color:rgba(255,255,255,0.3);margin-top:1rem;
+    animation:subGlitch 5s step-end infinite;
+  }
+  @keyframes subGlitch {
+    0%,95%,100%{opacity:1;transform:translate(0);}
+    96%{opacity:0;transform:translate(4px,0);}
+    97%{opacity:1;transform:translate(-4px,0);}
+    98%{opacity:0;}
+    99%{opacity:1;}
+  }
+
+  /* Intensity slider */
+  .controls {
+    position:fixed;bottom:0;left:0;right:0;
+    padding:2rem;z-index:60;
+    display:grid;grid-template-columns:1fr 1fr;gap:2rem;
+    background:linear-gradient(to top, rgba(7,0,7,0.95), transparent);
+  }
+  .ctrl-left {}
+  .ctrl-tag { font-size:0.55rem;letter-spacing:0.2em;color:#ff3c00;border:1px solid #ff3c00;display:inline-block;padding:0.3em 0.7em;margin-bottom:0.8rem; }
+  h2 { font-family:'Black Han Sans',sans-serif;font-size:clamp(1.5rem,3vw,2.2rem);margin-bottom:0.5rem; }
+  .desc { font-size:0.7rem;line-height:1.8;color:rgba(255,255,255,0.45);max-width:460px; }
+  .code-line { font-size:0.6rem;color:rgba(255,60,0,0.7);margin-top:0.5rem; }
+
+  .ctrl-right { display:flex;flex-direction:column;justify-content:flex-end;gap:1rem; }
+  .slider-row { display:flex;flex-direction:column;gap:0.3rem; }
+  .slider-label { font-size:0.5rem;letter-spacing:0.15em;color:rgba(255,255,255,0.3); }
+  input[type=range] { width:100%;accent-color:#ff3c00; }
+
+  .trigger-btns { display:flex;gap:0.5rem; }
+  .trig-btn { font-size:0.6rem;letter-spacing:0.1em;padding:0.5em 1em;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.2s;flex:1; }
+  .trig-btn:hover{border-color:#ff3c00;color:#ff3c00;background:rgba(255,60,0,0.05);}
+
+  @media(max-width:700px){.controls{grid-template-columns:1fr;}.ctrl-right{display:none;}}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="tear"></div>
+<div id="cursor"></div>
+
+<nav>
+  <a href="index.html" class="back">← BACK</a>
+  <span class="nav-title">05 / GLITCH EFFECT</span>
+</nav>
+
+<div class="center-stage">
+  <div class="glitch-word" id="glitchWord" data-text="GLITCH">GLITCH</div>
+  <div class="subtitle" id="subtitle">CSS / PSEUDO-ELEMENTS / CLIP-PATH</div>
+</div>
+
+<div class="controls">
+  <div class="ctrl-left">
+    <div class="ctrl-tag">CSS TECHNIQUE</div>
+    <h2>The Glitch<br>Effect</h2>
+    <p class="desc">Three layers of the same text stacked with position:absolute. The ::before and ::after pseudo-elements use clip-path to show only slices, then CSS keyframes offset them horizontally to simulate digital corruption.</p>
+    <div class="code-line">::before { clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%) }</div>
+    <div class="code-line">::after &nbsp;{ clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%) }</div>
+  </div>
+  <div class="ctrl-right">
+    <div class="slider-row">
+      <div class="slider-label">GLITCH INTENSITY</div>
+      <input type="range" id="intensitySlider" min="1" max="10" value="5" oninput="updateIntensity(this.value)">
+    </div>
+    <div class="slider-row">
+      <div class="slider-label">SPEED</div>
+      <input type="range" id="speedSlider" min="0.5" max="5" value="2" step="0.1" oninput="updateSpeed(this.value)">
+    </div>
+    <div class="trigger-btns">
+      <button class="trig-btn" onclick="triggerMassGlitch()">MASS GLITCH</button>
+      <button class="trig-btn" onclick="randomWord()">RANDOM WORD</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 7 + 'px';
+    cursor.style.top = e.clientY - 7 + 'px';
+  });
+
+  const words = ['GLITCH', 'ERROR', 'CHAOS', 'BREAK', 'VOID', 'CRASH', 'CORRUPT', 'NOISE', 'FAULT', 'BLEED', 'HACK', 'ROGUE'];
+  const glitchWord = document.getElementById('glitchWord');
+
+  function randomWord() {
+    const w = words[Math.floor(Math.random() * words.length)];
+    glitchWord.setAttribute('data-text', w);
+    glitchWord.textContent = w;
+    triggerMassGlitch();
+  }
+
+  function updateIntensity(v) {
+    const px = v * 1.5;
+    const style = document.createElement('style');
+    style.id = 'dynamic-glitch';
+    document.getElementById('dynamic-glitch')?.remove();
+    style.textContent = `
+      .glitch-word::before { animation: glitchR-custom ${3/v}s infinite !important; }
+      .glitch-word::after { animation: glitchB-custom ${3/v}s infinite !important; }
+      @keyframes glitchR-custom { 0%,85%,100%{transform:translate(0)} 86%{transform:translate(-${px}px,${px*0.3}px)} 88%{transform:translate(${px}px,-${px*0.3}px)} 90%{transform:translate(-${px*0.6}px,${px*0.2}px)} 92%{transform:translate(${px*0.8}px,-${px*0.2}px)} }
+      @keyframes glitchB-custom { 0%,85%,100%{transform:translate(0)} 86%{transform:translate(${px}px,-${px*0.3}px)} 88%{transform:translate(-${px}px,${px*0.3}px)} 90%{transform:translate(${px*0.6}px,-${px*0.2}px)} 92%{transform:translate(-${px*0.8}px,${px*0.2}px)} }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function updateSpeed(v) {
+    glitchWord.style.animationDuration = (3/v) + 's';
+  }
+
+  function triggerMassGlitch() {
+    document.body.style.transform = `translate(${(Math.random()-0.5)*8}px, ${(Math.random()-0.5)*4}px)`;
+    document.body.style.filter = `hue-rotate(${Math.random()*60}deg) contrast(1.5)`;
+    setTimeout(() => { document.body.style.transform=''; document.body.style.filter=''; }, 150);
+    setTimeout(() => {
+      document.body.style.transform = `translate(${(Math.random()-0.5)*12}px, 0)`;
+      document.body.style.filter = `invert(0.1) hue-rotate(${Math.random()*180}deg)`;
+    }, 200);
+    setTimeout(() => { document.body.style.transform=''; document.body.style.filter=''; }, 350);
+  }
+
+  // Mouse interaction
+  document.addEventListener('mousemove', e => {
+    const cx=window.innerWidth/2, cy=window.innerHeight/2;
+    const dx=(e.clientX-cx)/cx, dy=(e.clientY-cy)/cy;
+    glitchWord.style.transform = `skewX(${dx*3}deg) skewY(${dy*1}deg)`;
+  });
+
+  document.addEventListener('click', triggerMassGlitch);
+</script>
+</body>
+</html>

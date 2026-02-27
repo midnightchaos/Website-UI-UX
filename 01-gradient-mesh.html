@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gradient Mesh — WEBCRAFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root { --c1: #ff3c00; --c2: #ffaa00; --c3: #ff0066; --c4: #7700ff; --bg: #0a0505; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background: var(--bg); color: #fff; font-family: 'Space Mono', monospace; overflow: hidden; height: 100vh; cursor: crosshair; }
+
+  .mesh {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 60% at var(--x1,20%) var(--y1,30%), rgba(255,60,0,0.7) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at var(--x2,70%) var(--y2,20%), rgba(255,170,0,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 55% 55% at var(--x3,80%) var(--y3,70%), rgba(255,0,102,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 45% 45% at var(--x4,30%) var(--y4,80%), rgba(119,0,255,0.55) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,0,0,0.3) 0%, transparent 80%);
+    filter: blur(40px) saturate(1.4);
+    animation: meshPulse 12s ease-in-out infinite;
+    transition: background 0.1s;
+  }
+  @keyframes meshPulse {
+    0%,100% { --x1:20%; --y1:30%; --x2:70%; --y2:20%; --x3:80%; --y3:70%; --x4:30%; --y4:80%; }
+    25% { --x1:30%; --y1:20%; --x2:80%; --y2:30%; --x3:70%; --y3:80%; --x4:20%; --y4:70%; }
+    50% { --x1:40%; --y1:40%; --x2:60%; --y2:10%; --x3:90%; --y3:60%; --x4:10%; --y4:90%; }
+    75% { --x1:10%; --y1:50%; --x2:90%; --y2:40%; --x3:60%; --y3:90%; --x4:40%; --y4:60%; }
+  }
+
+  .noise {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+    opacity: 0.5; pointer-events: none; mix-blend-mode: overlay;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1.5rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 10;
+    background: linear-gradient(to bottom, rgba(10,5,5,0.8), transparent);
+  }
+  .back {
+    font-size: 0.65rem; letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.6); text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.2); padding: 0.4em 0.9em;
+    transition: all 0.2s;
+  }
+  .back:hover { color: #fff; border-color: rgba(255,255,255,0.6); }
+  .nav-title { font-size: 0.65rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); }
+
+  .content {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 3rem;
+    background: linear-gradient(to top, rgba(10,5,5,0.95) 0%, transparent 100%);
+    z-index: 10;
+  }
+  .tag { font-size: 0.6rem; letter-spacing: 0.2em; color: var(--c1); border: 1px solid var(--c1); display: inline-block; padding: 0.3em 0.7em; margin-bottom: 1rem; }
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.5rem, 6vw, 5rem); line-height: 1; margin-bottom: 1rem; font-style: italic; }
+  .desc { font-size: 0.75rem; line-height: 1.8; color: rgba(255,255,255,0.6); max-width: 600px; margin-bottom: 2rem; }
+  .code-block {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem 1.5rem;
+    font-size: 0.65rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.7);
+    max-width: 700px;
+    border-left: 2px solid var(--c1);
+  }
+  .code-block .k { color: #ff80ff; }
+  .code-block .v { color: var(--c2); }
+  .code-block .c { color: rgba(255,255,255,0.3); font-style: italic; }
+
+  .controls {
+    position: fixed; right: 2rem; top: 50%; transform: translateY(-50%);
+    z-index: 10;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .ctrl-btn {
+    width: 40px; height: 40px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.4);
+    color: rgba(255,255,255,0.5);
+    font-size: 1rem;
+    cursor: crosshair;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-family: 'Space Mono', monospace;
+  }
+  .ctrl-btn:hover { border-color: var(--c1); color: var(--c1); background: rgba(255,60,0,0.1); }
+  .ctrl-label { font-size: 0.5rem; letter-spacing: 0.1em; color: rgba(255,255,255,0.3); text-align: center; margin-top: 0.5rem; }
+
+  .mouse-hint {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 5;
+    pointer-events: none;
+    animation: fadeOut 3s 1s forwards;
+  }
+  @keyframes fadeOut { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+  .mouse-hint p { font-size: 0.7rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.5); }
+  .mouse-hint .big { font-family: 'Playfair Display', serif; font-size: 2rem; font-style: italic; color: rgba(255,255,255,0.2); margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+<div class="mesh" id="mesh"></div>
+<div class="noise"></div>
+
+<nav>
+  <a href="index.html" class="back">← BACK</a>
+  <span class="nav-title">01 / GRADIENT MESH</span>
+</nav>
+
+<div class="mouse-hint">
+  <div class="big">Move your mouse</div>
+  <p>INTERACT WITH THE MESH</p>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="setSpeed('slow')">⟳</button>
+  <div class="ctrl-label">SLOW</div>
+  <button class="ctrl-btn" onclick="setSpeed('fast')">⚡</button>
+  <div class="ctrl-label">FAST</div>
+  <button class="ctrl-btn" onclick="randomColors()">✦</button>
+  <div class="ctrl-label">RECOLOR</div>
+</div>
+
+<div class="content">
+  <div class="tag">CSS / RADIAL-GRADIENT</div>
+  <h1>Gradient<br>Mesh Animation</h1>
+  <p class="desc">Pure CSS technique using multiple layered radial-gradient() functions with different ellipse positions. Animated with @keyframes and blurred with filter: blur() to create smooth, organic color transitions with zero JavaScript rendering.</p>
+  <div class="code-block">
+    <span class="c">/* The magic — stacked radial gradients */</span><br>
+    <span class="k">background</span>: <br>
+    &nbsp;&nbsp;<span class="k">radial-gradient</span>(<span class="v">ellipse 60% 60% at 20% 30%</span>, <span class="v">rgba(255,60,0,0.7)</span> 0%, transparent 70%),<br>
+    &nbsp;&nbsp;<span class="k">radial-gradient</span>(<span class="v">ellipse 50% 50% at 70% 20%</span>, <span class="v">rgba(255,170,0,0.6)</span> 0%, transparent 70%);<br>
+    <span class="k">filter</span>: <span class="v">blur(40px) saturate(1.4)</span>;<br>
+    <span class="k">animation</span>: <span class="v">meshPulse 12s ease-in-out infinite</span>;
+  </div>
+</div>
+
+<script>
+  const mesh = document.getElementById('mesh');
+  let speed = 12;
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth * 100).toFixed(1);
+    const y = (e.clientY / window.innerHeight * 100).toFixed(1);
+    mesh.style.setProperty('--x1', x + '%');
+    mesh.style.setProperty('--y1', y + '%');
+    mesh.style.setProperty('--x3', (100 - x) + '%');
+    mesh.style.setProperty('--y3', (100 - y) + '%');
+  });
+  function setSpeed(s) {
+    speed = s === 'slow' ? 20 : 5;
+    mesh.style.animationDuration = speed + 's';
+  }
+  function randomColors() {
+    const hues = [Math.random()*360, Math.random()*360, Math.random()*360, Math.random()*360];
+    const colors = hues.map(h => `hsl(${h}, 100%, 55%)`);
+    mesh.style.background = `
+      radial-gradient(ellipse 60% 60% at var(--x1,20%) var(--y1,30%), ${colors[0].replace(')',',0.7)')} 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at var(--x2,70%) var(--y2,20%), ${colors[1].replace(')',',0.6)')} 0%, transparent 70%),
+      radial-gradient(ellipse 55% 55% at var(--x3,80%) var(--y3,70%), ${colors[2].replace(')',',0.6)')} 0%, transparent 70%),
+      radial-gradient(ellipse 45% 45% at var(--x4,30%) var(--y4,80%), ${colors[3].replace(')',',0.55)')} 0%, transparent 70%)
+    `;
+  }
+</script>
+</body>
+</html>

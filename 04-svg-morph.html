@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVG Morphing — WEBCRAFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { background:#f5f0eb; color:#1a1410; font-family:'Cormorant Garamond',serif; overflow:hidden; height:100vh; cursor:none; }
+
+  #cursor { width:6px;height:6px;background:#1a1410;border-radius:50%;position:fixed;pointer-events:none;z-index:999; }
+  #cursor-ring { width:30px;height:30px;border:1px solid rgba(26,20,16,0.4);border-radius:50%;position:fixed;pointer-events:none;z-index:998;transform:translate(-50%,-50%);transition:left 0.1s,top 0.1s; }
+
+  .bg-blobs { position:fixed;inset:0;z-index:0; }
+  .main-blob-wrap { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1; }
+  .main-blob-wrap svg { width:min(80vh,80vw);height:min(80vh,80vw); }
+
+  nav {
+    position:fixed;top:0;left:0;right:0;padding:1.5rem 2.5rem;
+    display:flex;justify-content:space-between;align-items:center;z-index:20;
+  }
+  .back { font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;color:rgba(26,20,16,0.5);text-decoration:none;transition:color 0.2s; }
+  .back:hover{color:#1a1410;}
+  .nav-title { font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:rgba(26,20,16,0.35); }
+
+  .content {
+    position:fixed;bottom:0;left:0;right:0;padding:2.5rem;z-index:20;
+    display:grid;grid-template-columns:1fr auto;gap:3rem;align-items:end;
+  }
+  .tag { font-family:'Space Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:rgba(26,20,16,0.5);margin-bottom:0.8rem;display:block; }
+  h1 { font-size:clamp(2.5rem,5vw,4rem);font-weight:300;font-style:italic;line-height:1.1;margin-bottom:0.8rem; }
+  .desc { font-size:0.9rem;line-height:1.8;color:rgba(26,20,16,0.55);font-weight:300;max-width:480px; }
+
+  .controls { display:flex;flex-direction:column;gap:0.8rem;min-width:180px; }
+  .ctrl-item { display:flex;flex-direction:column;gap:0.3rem; }
+  .ctrl-label { font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:0.15em;color:rgba(26,20,16,0.4); }
+  input[type=range] { width:100%;accent-color:#c8894a;height:2px;cursor:pointer; }
+
+  .palette-btns { display:flex;gap:0.4rem; }
+  .pal-btn { width:20px;height:20px;border-radius:50%;border:none;cursor:pointer;transition:transform 0.2s; }
+  .pal-btn:hover { transform:scale(1.2); }
+
+  .complexity-btns { display:flex;gap:0.4rem; }
+  .cplx-btn { font-family:'Space Mono',monospace;font-size:0.5rem;letter-spacing:0.1em;padding:0.3em 0.6em;border:1px solid rgba(26,20,16,0.3);background:transparent;color:rgba(26,20,16,0.5);cursor:pointer;transition:all 0.2s; }
+  .cplx-btn:hover,.cplx-btn.active{border-color:#1a1410;color:#1a1410;}
+
+  @media(max-width:700px){.content{grid-template-columns:1fr;}.controls{display:none;}}
+</style>
+</head>
+<body>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<svg style="position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:0.06" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
+  <defs><filter id="blur"><feGaussianBlur stdDeviation="8"/></filter></defs>
+  <circle cx="20" cy="20" r="30" fill="#c8894a" filter="url(#blur)"/>
+  <circle cx="80" cy="80" r="25" fill="#8a5c3f" filter="url(#blur)"/>
+  <circle cx="70" cy="15" r="20" fill="#d4a574" filter="url(#blur)"/>
+</svg>
+
+<nav>
+  <a href="index.html" class="back">← BACK</a>
+  <span class="nav-title">04 / SVG MORPHING</span>
+</nav>
+
+<div class="main-blob-wrap">
+  <svg id="blobSvg" viewBox="0 0 400 400">
+    <defs>
+      <radialGradient id="g1" cx="40%" cy="40%">
+        <stop offset="0%" stop-color="#e8a56a"/>
+        <stop offset="50%" stop-color="#c8894a"/>
+        <stop offset="100%" stop-color="#8a5c3f"/>
+      </radialGradient>
+      <filter id="glow2">
+        <feGaussianBlur stdDeviation="6" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+      </filter>
+    </defs>
+    <!-- Shadow blob -->
+    <path id="shadowBlob" fill="rgba(26,20,16,0.08)" transform="translate(8,12)"/>
+    <!-- Main blob -->
+    <path id="mainBlob" fill="url(#g1)" filter="url(#glow2)"/>
+    <!-- Inner highlight -->
+    <path id="innerBlob" fill="rgba(255,255,255,0.12)" transform="translate(-15,-20) scale(0.55) translate(145,155)"/>
+  </svg>
+</div>
+
+<div class="content">
+  <div>
+    <span class="tag">SVG / PATH ANIMATION</span>
+    <h1>Organic Blob<br>Morphing</h1>
+    <p class="desc">SVG path &lt;animate&gt; elements interpolate between bezier curve d-attributes. The browser's SVG engine handles all intermediate frames. Move your mouse to influence the morph speed.</p>
+  </div>
+  <div class="controls">
+    <div class="ctrl-item">
+      <div class="ctrl-label">MORPH SPEED</div>
+      <input type="range" id="speedCtrl" min="2" max="20" value="8" step="0.5">
+    </div>
+    <div class="ctrl-item">
+      <div class="ctrl-label">COMPLEXITY</div>
+      <div class="complexity-btns">
+        <button class="cplx-btn active" onclick="setComplexity(4,this)">4PT</button>
+        <button class="cplx-btn" onclick="setComplexity(6,this)">6PT</button>
+        <button class="cplx-btn" onclick="setComplexity(8,this)">8PT</button>
+      </div>
+    </div>
+    <div class="ctrl-item">
+      <div class="ctrl-label">PALETTE</div>
+      <div class="palette-btns">
+        <button class="pal-btn" style="background:#c8894a" onclick="setPalette(['#e8a56a','#c8894a','#8a5c3f'])"></button>
+        <button class="pal-btn" style="background:#4a8fc8" onclick="setPalette(['#6ab8e8','#4a8fc8','#2a5f8a'])"></button>
+        <button class="pal-btn" style="background:#7ac84a" onclick="setPalette(['#a0e870','#7ac84a','#4a882a'])"></button>
+        <button class="pal-btn" style="background:#c84a8f" onclick="setPalette(['#e870b8','#c84a8f','#8a2a5f'])"></button>
+      </div>
+    </div>
+    <div class="ctrl-item">
+      <div class="ctrl-label">BG MOOD</div>
+      <div class="palette-btns">
+        <button class="pal-btn" style="background:#f5f0eb;border:1px solid #ddd" onclick="document.body.style.background='#f5f0eb'"></button>
+        <button class="pal-btn" style="background:#0a0808" onclick="document.body.style.background='#0a0808';document.body.style.color='#f5f0eb'"></button>
+        <button class="pal-btn" style="background:#0a1408" onclick="document.body.style.background='#0a1408';document.body.style.color='#c8ffaa'"></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left=e.clientX-3+'px'; cursor.style.top=e.clientY-3+'px';
+    ring.style.left=e.clientX+'px'; ring.style.top=e.clientY+'px';
+  });
+
+  const mainBlob = document.getElementById('mainBlob');
+  const shadowBlob = document.getElementById('shadowBlob');
+  const innerBlob = document.getElementById('innerBlob');
+
+  let points = 4;
+  let currentPath = '';
+  let targetPath = '';
+  let t = 0;
+  let animId;
+
+  function generateBlobPath(pts, scale=180, cx=200, cy=200) {
+    const angles = [];
+    const step = (Math.PI * 2) / pts;
+    for (let i = 0; i < pts; i++) angles.push(i * step);
+    const radii = angles.map(() => scale * (0.7 + Math.random() * 0.5));
+    const coords = angles.map((a, i) => ({
+      x: cx + Math.cos(a) * radii[i],
+      y: cy + Math.sin(a) * radii[i]
+    }));
+    let d = `M ${coords[0].x.toFixed(1)} ${coords[0].y.toFixed(1)} `;
+    for (let i = 0; i < pts; i++) {
+      const curr = coords[i];
+      const next = coords[(i+1) % pts];
+      const cp1x = curr.x + Math.cos(angles[i] + Math.PI/2) * radii[i] * 0.5;
+      const cp1y = curr.y + Math.sin(angles[i] + Math.PI/2) * radii[i] * 0.5;
+      const cp2x = next.x + Math.cos(angles[(i+1)%pts] - Math.PI/2) * radii[(i+1)%pts] * 0.5;
+      const cp2y = next.y + Math.sin(angles[(i+1)%pts] - Math.PI/2) * radii[(i+1)%pts] * 0.5;
+      d += `C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${next.x.toFixed(1)} ${next.y.toFixed(1)} `;
+    }
+    return d + 'Z';
+  }
+
+  function parsePath(d) {
+    return d.match(/-?[\d.]+/g).map(Number);
+  }
+
+  function lerpPath(a, b, t) {
+    const na = parsePath(a), nb = parsePath(b);
+    if (na.length !== nb.length) return a;
+    const result = na.map((v, i) => v + (nb[i] - v) * t);
+    let str = a.replace(/-?[\d.]+/g, () => result.shift().toFixed(2));
+    return str;
+  }
+
+  let fromPath, toPath, morphT = 0, speed = 0.008;
+  fromPath = generateBlobPath(points);
+  toPath = generateBlobPath(points);
+
+  function morphLoop() {
+    const spd = parseFloat(document.getElementById('speedCtrl').value);
+    morphT += 0.004 * spd;
+    if (morphT >= 1) {
+      morphT = 0;
+      fromPath = toPath;
+      toPath = generateBlobPath(points);
+    }
+    const ease = morphT < 0.5 ? 2*morphT*morphT : -1+(4-2*morphT)*morphT;
+    const p = lerpPath(fromPath, toPath, ease);
+    mainBlob.setAttribute('d', p);
+    shadowBlob.setAttribute('d', p);
+    innerBlob.setAttribute('d', p);
+    animId = requestAnimationFrame(morphLoop);
+  }
+  morphLoop();
+
+  document.addEventListener('mousemove', e => {
+    const cx = window.innerWidth/2, cy = window.innerHeight/2;
+    const dx = (e.clientX - cx) / cx, dy = (e.clientY - cy) / cy;
+    document.getElementById('blobSvg').style.transform = `rotate(${dx*5}deg) scale(${1 + Math.abs(dy)*0.05})`;
+  });
+
+  function setComplexity(n, btn) {
+    points = n;
+    fromPath = generateBlobPath(points);
+    toPath = generateBlobPath(points);
+    morphT = 0;
+    document.querySelectorAll('.cplx-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function setPalette([c1,c2,c3]) {
+    const g = document.getElementById('g1');
+    g.children[0].setAttribute('stop-color', c1);
+    g.children[1].setAttribute('stop-color', c2);
+    g.children[2].setAttribute('stop-color', c3);
+  }
+</script>
+</body>
+</html>

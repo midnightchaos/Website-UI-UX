@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typewriter — WEBCRAFT</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<style>
+  * { margin:0;padding:0;box-sizing:border-box; }
+  body { background:#030f03; color:#33ff33; font-family:'Share Tech Mono',monospace; overflow:hidden; height:100vh; cursor:none; }
+
+  .scanlines {
+    position:fixed;inset:0;pointer-events:none;z-index:5;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
+  }
+  .vignette {
+    position:fixed;inset:0;pointer-events:none;z-index:4;
+    background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.85) 100%);
+  }
+  .glow { text-shadow: 0 0 8px #33ff33, 0 0 20px rgba(51,255,51,0.4); }
+
+  #cursor-dot { width:10px;height:18px;background:#33ff33;position:fixed;pointer-events:none;z-index:999;animation:blink 0.8s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+  nav {
+    position:fixed;top:0;left:0;right:0;padding:1rem 2rem;
+    display:flex;justify-content:space-between;align-items:center;
+    z-index:20;border-bottom:1px solid rgba(51,255,51,0.2);
+    background:rgba(3,15,3,0.9);
+  }
+  .back { font-size:0.7rem;letter-spacing:0.1em;color:rgba(51,255,51,0.6);text-decoration:none;transition:color 0.2s; }
+  .back:hover{color:#33ff33;}
+  .nav-title { font-size:0.65rem;letter-spacing:0.2em;color:rgba(51,255,51,0.4); }
+  .blink-dot { display:inline-block;width:8px;height:8px;background:#33ff33;border-radius:50%;animation:blink 1s step-end infinite;margin-right:0.5rem; }
+
+  .terminal {
+    position:fixed;top:60px;bottom:0;left:0;right:0;
+    padding:2rem;overflow:hidden;
+    display:flex;flex-direction:column;gap:0;
+    z-index:10;
+  }
+  .terminal-header {
+    border-bottom:1px solid rgba(51,255,51,0.2);
+    padding-bottom:1rem;margin-bottom:1.5rem;
+  }
+  .terminal-header h1 { font-family:'VT323',monospace;font-size:clamp(2rem,5vw,3.5rem);line-height:1;letter-spacing:0.05em; }
+  .terminal-header .sub { font-size:0.65rem;color:rgba(51,255,51,0.5);margin-top:0.3rem; }
+
+  .output { flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:1rem; }
+  .output::-webkit-scrollbar{width:4px;} .output::-webkit-scrollbar-track{background:transparent;} .output::-webkit-scrollbar-thumb{background:rgba(51,255,51,0.3);}
+
+  .line { font-size:0.85rem;line-height:1.7;white-space:pre-wrap;min-height:1.4em; }
+  .line.cmd { color:#33ff33; }
+  .line.out { color:rgba(51,255,51,0.7); }
+  .line.err { color:#ff4444;text-shadow:0 0 8px #ff4444; }
+  .line.success { color:#b8ff57;text-shadow:0 0 8px rgba(184,255,87,0.5); }
+  .line.info { color:#00e5ff;text-shadow:0 0 8px rgba(0,229,255,0.3); }
+  .line.typing::after { content:'█'; animation:blink 0.7s step-end infinite; }
+
+  .input-row {
+    display:flex;align-items:center;gap:0.5rem;
+    border-top:1px solid rgba(51,255,51,0.2);
+    padding-top:1rem;
+  }
+  .prompt { color:rgba(51,255,51,0.6);font-size:0.85rem; }
+  #userInput {
+    flex:1;background:transparent;border:none;outline:none;
+    color:#33ff33;font-family:'Share Tech Mono',monospace;font-size:0.85rem;
+    text-shadow:0 0 8px #33ff33;caret-color:#33ff33;
+  }
+
+  .info-panel {
+    position:fixed;right:2rem;top:80px;
+    width:260px;border:1px solid rgba(51,255,51,0.2);
+    background:rgba(3,15,3,0.8);padding:1.2rem;z-index:20;
+  }
+  .panel-title { font-size:0.6rem;letter-spacing:0.2em;color:rgba(51,255,51,0.5);margin-bottom:1rem;border-bottom:1px solid rgba(51,255,51,0.15);padding-bottom:0.5rem; }
+  .code-snippet { font-size:0.6rem;line-height:1.8;color:rgba(51,255,51,0.6); }
+  .code-snippet .hl { color:#b8ff57; }
+
+  @media(max-width:700px){.info-panel{display:none;}}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div id="cursor-dot"></div>
+
+<nav>
+  <a href="index.html" class="back">← BACK</a>
+  <span><span class="blink-dot"></span><span class="nav-title">03 / TYPEWRITER EFFECT</span></span>
+</nav>
+
+<div class="info-panel">
+  <div class="panel-title">// CSS TECHNIQUE</div>
+  <div class="code-snippet">
+@keyframes typing {<br>
+&nbsp;&nbsp;from { <span class="hl">width: 0</span> }<br>
+&nbsp;&nbsp;to { <span class="hl">width: 100%</span> }<br>
+}<br><br>
+.element {<br>
+&nbsp;&nbsp;overflow: <span class="hl">hidden</span>;<br>
+&nbsp;&nbsp;white-space: <span class="hl">nowrap</span>;<br>
+&nbsp;&nbsp;animation: typing 2s<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="hl">steps(30)</span> forwards;<br>
+}<br><br>
+<span style="color:rgba(51,255,51,0.4)">/* steps() = discrete jumps */</span><br>
+<span style="color:rgba(51,255,51,0.4)">/* simulates letter-by-letter */</span>
+  </div>
+</div>
+
+<div class="terminal">
+  <div class="terminal-header">
+    <h1 class="glow">WEBCRAFT TERMINAL</h1>
+    <div class="sub">// Interactive typewriter demonstration — try typing commands</div>
+  </div>
+  <div class="output" id="output"></div>
+  <div class="input-row">
+    <span class="prompt">visitor@webcraft:~$</span>
+    <input type="text" id="userInput" placeholder="type a command..." autocomplete="off" spellcheck="false">
+  </div>
+</div>
+
+<script>
+  document.addEventListener('mousemove', e => {
+    document.getElementById('cursor-dot').style.cssText = `left:${e.clientX}px;top:${e.clientY-9}px;`;
+  });
+
+  const output = document.getElementById('output');
+  const input = document.getElementById('userInput');
+  const COMMANDS = {
+    help: `Available commands:\n  about     — about this technique\n  demo      — run a typing demo\n  colors    — change terminal color\n  matrix    — go deeper\n  clear     — clear terminal\n  easter    — 🤫`,
+    about: `TYPEWRITER EFFECT\n─────────────────\nThe CSS typewriter uses width animation from 0 to 100%\ncombined with overflow:hidden and white-space:nowrap.\nThe key is the steps() timing function which creates\ndiscrete jumps instead of smooth interpolation —\nimitating actual character-by-character typing.`,
+    clear: '__CLEAR__',
+    matrix: `INITIATING MATRIX SEQUENCE...\nWARNING: You are not prepared.`,
+    easter: `( ͡° ͜ʖ ͡°)\nYou found the easter egg. Nothing happens.\nBut you feel slightly better about yourself.`,
+    colors: '__COLORS__',
+    demo: '__DEMO__',
+  };
+
+  function addLine(text, type='out', delay=0) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = `line ${type}`;
+        output.appendChild(div);
+        typeText(div, text, resolve);
+        output.scrollTop = output.scrollHeight;
+      }, delay);
+    });
+  }
+
+  function typeText(el, text, done) {
+    let i = 0;
+    el.classList.add('typing');
+    const interval = setInterval(() => {
+      el.textContent = text.slice(0, i);
+      i++;
+      if (i > text.length) {
+        clearInterval(interval);
+        el.textContent = text;
+        el.classList.remove('typing');
+        if (done) done();
+      }
+      output.scrollTop = output.scrollHeight;
+    }, Math.max(12, 40 - text.length * 0.3));
+  }
+
+  async function runBootSequence() {
+    await addLine('WEBCRAFT OS v2.5.1 — Animation Engine', 'info', 200);
+    await addLine('Copyright © 2025 WEBCRAFT LABS', 'out', 100);
+    await addLine('', 'out', 50);
+    await addLine('Initializing subsystems...', 'out', 100);
+    await addLine('[OK] CSS Animation Engine loaded', 'success', 300);
+    await addLine('[OK] Canvas Renderer online', 'success', 200);
+    await addLine('[OK] SVG Morphing module ready', 'success', 200);
+    await addLine('[WARN] Glitch module: operating in chaos mode', 'err', 300);
+    await addLine('', 'out', 100);
+    await addLine('Type "help" for available commands.', 'info', 200);
+    input.focus();
+  }
+
+  const colorSchemes = [
+    { fg:'#33ff33', bg:'#030f03' },
+    { fg:'#00e5ff', bg:'#010a14' },
+    { fg:'#ff80ff', bg:'#0f0314' },
+    { fg:'#ffe066', bg:'#141003' },
+    { fg:'#ff3c00', bg:'#140500' },
+  ];
+  let colorIdx = 0;
+
+  async function handleCommand(cmd) {
+    const div = document.createElement('div');
+    div.className = 'line cmd';
+    div.textContent = `visitor@webcraft:~$ ${cmd}`;
+    output.appendChild(div);
+
+    const result = COMMANDS[cmd.toLowerCase()];
+    if (!result) {
+      await addLine(`command not found: ${cmd}. Type "help".`, 'err', 50);
+    } else if (result === '__CLEAR__') {
+      output.innerHTML = '';
+    } else if (result === '__COLORS__') {
+      colorIdx = (colorIdx + 1) % colorSchemes.length;
+      document.body.style.color = colorSchemes[colorIdx].fg;
+      document.body.style.background = colorSchemes[colorIdx].bg;
+      document.querySelectorAll('.glow').forEach(el => el.style.textShadow = `0 0 8px ${colorSchemes[colorIdx].fg}`);
+      await addLine(`Terminal color scheme updated → scheme ${colorIdx + 1}/${colorSchemes.length}`, 'success', 50);
+    } else if (result === '__DEMO__') {
+      const demoLines = [
+        "The quick brown fox jumps over the lazy dog.",
+        "CSS steps() timing creates discrete animation frames.",
+        "Each step = one character revealed.",
+        "width: 0 → width: 100% with overflow: hidden.",
+        "TYPEWRITER DEMO COMPLETE ✓"
+      ];
+      for (let i = 0; i < demoLines.length; i++) {
+        await addLine(demoLines[i], i === demoLines.length - 1 ? 'success' : 'out', 100);
+      }
+    } else {
+      for (const line of result.split('\n')) {
+        await addLine(line, 'out', 60);
+      }
+    }
+    output.scrollTop = output.scrollHeight;
+  }
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && input.value.trim()) {
+      handleCommand(input.value.trim());
+      input.value = '';
+    }
+  });
+
+  runBootSequence();
+</script>
+</body>
+</html>

@@ -1,172 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CORE.OS | UI/UX & Web Architecture</title>
-    <link rel="stylesheet" href="styles.css">
-    <style>
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEBCRAFT — Animation Showcase</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080808;
+    --surface: #111;
+    --border: #222;
+    --accent: #ff3c00;
+    --accent2: #00e5ff;
+    --accent3: #b8ff57;
+    --text: #f0f0f0;
+    --muted: #666;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  #cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s, background 0.2s;
+    mix-blend-mode: exclusion;
+  }
+  #cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid var(--accent2);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: left 0.12s ease, top 0.12s ease, transform 0.2s;
+    transform: translate(-50%, -50%);
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.35;
+  }
+  header {
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+    animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.15em; }
+  .logo span { color: var(--accent); }
+  .badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent3);
+    border: 1px solid var(--accent3);
+    padding: 0.3em 0.8em;
+    letter-spacing: 0.15em;
+    animation: blink 2s step-end infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  .hero {
+    padding: 5rem 3rem 4rem;
+  }
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 12vw, 10rem);
+    line-height: 0.9;
+    letter-spacing: -0.01em;
+  }
+  .hero-title .line2 { color: var(--accent2); }
+  .hero-title .line3 { -webkit-text-stroke: 1px var(--accent); color: transparent; }
+  .hero-sub { margin-top: 2rem; color: var(--muted); font-size: 0.95rem; max-width: 500px; line-height: 1.7; }
+  .scroll-hint {
+    margin-top: 3rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  .scroll-hint::after {
+    content: '';
+    width: 60px; height: 1px;
+    background: var(--muted);
+    animation: grow 2s ease-in-out infinite alternate;
+  }
+  @keyframes grow { from { width: 20px; } to { width: 80px; } }
+  .section-label {
+    padding: 1.5rem 3rem 0.5rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-left: 1px solid var(--border);
+  }
+  .card {
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    min-height: 340px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.3s;
+    cursor: none;
+  }
+  .card:hover { background: #0f0f0f; }
+  .card-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .card-content { position: relative; z-index: 2; }
+  .card-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 5rem;
+    color: #1a1a1a;
+    position: absolute;
+    top: 1rem; right: 1.5rem;
+    line-height: 1;
+    pointer-events: none;
+    transition: color 0.3s;
+  }
+  .card:hover .card-number { color: #222; }
+  .card-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3em 0.7em;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 0.8rem;
+  }
+  .tag-css { background: #1a0a00; color: var(--accent); border: 1px solid var(--accent); }
+  .tag-canvas { background: #000d1a; color: var(--accent2); border: 1px solid var(--accent2); }
+  .tag-webgl { background: #0a1a00; color: var(--accent3); border: 1px solid var(--accent3); }
+  .tag-svg { background: #1a001a; color: #ff80ff; border: 1px solid #ff80ff; }
+  .tag-js { background: #1a1a00; color: #ffe066; border: 1px solid #ffe066; }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+    margin-bottom: 0.4rem;
+  }
+  .card-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+  .card-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+  .card:hover .card-cta { opacity: 1; transform: translateY(0); }
+  .card.wide { grid-column: span 2; }
+  .card.tall { min-height: 480px; }
 
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
-        }
+  /* mesh bg */
+  .mesh-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(255,60,0,0.25) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(0,229,255,0.2) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(184,255,87,0.15) 0%, transparent 50%);
+    animation: meshMove 8s ease-in-out infinite alternate;
+    filter: blur(30px);
+  }
+  @keyframes meshMove {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(5deg); }
+    100% { transform: scale(0.95) rotate(-3deg); }
+  }
+  .typewriter-demo {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem; flex-direction: column; gap: 0.5rem;
+  }
+  .tw-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent3);
+    overflow: hidden; white-space: nowrap; width: 0;
+  }
+  .tw-line:nth-child(1) { animation: typing 2s steps(30) 0.5s forwards; }
+  .tw-line:nth-child(2) { animation: typing 2s steps(30) 2.5s forwards; }
+  .tw-line:nth-child(3) { animation: typing 2s steps(30) 4.5s forwards; }
+  .tw-line:nth-child(4) { animation: typing 2s steps(30) 6.5s forwards; }
+  @keyframes typing { from { width: 0; } to { width: 100%; } }
+  .morph-svg { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.6; }
+  .glitch-container { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .glitch { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; position: relative; color: var(--text); letter-spacing: 0.1em; }
+  .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; font-family: inherit; font-size: inherit; letter-spacing: inherit; }
+  .glitch::before { color: var(--accent); animation: glitch1 3s infinite; clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%); }
+  .glitch::after { color: var(--accent2); animation: glitch2 3s infinite; clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%); }
+  @keyframes glitch1 { 0%,90%,100%{transform:translate(0)} 92%{transform:translate(-3px,1px)} 94%{transform:translate(3px,-1px)} 96%{transform:translate(-2px,2px)} 98%{transform:translate(2px,-2px)} }
+  @keyframes glitch2 { 0%,90%,100%{transform:translate(0)} 92%{transform:translate(3px,-1px)} 94%{transform:translate(-3px,1px)} 96%{transform:translate(2px,-2px)} 98%{transform:translate(-2px,2px)} }
+  .clock-wrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+  .clock { width: 160px; height: 160px; border-radius: 50%; border: 1px solid #333; position: relative; background: radial-gradient(circle, #111 60%, #0a0a0a 100%); box-shadow: 0 0 30px rgba(0,229,255,0.1), inset 0 0 20px rgba(0,229,255,0.05); }
+  .clock-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; z-index: 5; }
+  .hand { position: absolute; bottom: 50%; left: 50%; transform-origin: bottom center; border-radius: 4px; }
+  #hour-hand { width: 3px; height: 45px; background: var(--text); margin-left: -1.5px; }
+  #min-hand { width: 2px; height: 58px; background: var(--accent2); margin-left: -1px; }
+  #sec-hand { width: 1px; height: 64px; background: var(--accent); margin-left: -0.5px; }
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer .f-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 0.2em; color: var(--muted); }
+  footer .f-tag { font-family: 'Space Mono', monospace; font-size: 0.6rem; color: var(--muted); letter-spacing: 0.15em; }
 
-        ::-webkit-scrollbar-thumb {
-            background: var(--primary);
-            border-radius: 10px;
-        }
-    </style>
+  /* click ripple */
+  .card::after {
+    content: 'EXPLORE →';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,60,0,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
+  }
+  .card:hover::after { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .card.wide { grid-column: span 2; }
+    header, .hero, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .section-label { padding-left: 1.5rem; }
+  }
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; border-left: none; }
+    .card.wide { grid-column: span 1; }
+    .card { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+  }
+</style>
 </head>
-
 <body>
-    <!-- Splash Screen -->
-    <div id="splash-screen">
-        <div class="splash-content">
-            <div class="splash-logo">CORE.OS</div>
-            <div class="splash-loader">
-                <div class="loader-bar"></div>
-            </div>
-            <div class="splash-text">INITIALIZING SYSTEM...</div>
-        </div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<header>
+  <div class="logo">WEB<span>CRAFT</span></div>
+  <div class="badge">◆ TECHEXPO 2025</div>
+</header>
+
+<section class="hero">
+  <p class="hero-eyebrow">// Web Animation Showcase — Click Any Card to Explore</p>
+  <h1 class="hero-title">
+    <span class="line1">THE</span><br>
+    <span class="line2">LIVING</span><br>
+    <span class="line3">WEB</span>
+  </h1>
+  <p class="hero-sub">Six techniques that push the browser to its creative limits. Click any card for a full deep-dive experience.</p>
+  <div class="scroll-hint">SCROLL & CLICK TO EXPLORE</div>
+</section>
+
+<p class="section-label">// 001 — TECHNIQUES — CLICK TO ENTER</p>
+
+<div class="grid">
+  <a class="card" href="01-gradient-mesh.html">
+    <div class="mesh-bg"></div>
+    <span class="card-number">01</span>
+    <div class="card-content">
+      <span class="card-tag tag-css">CSS</span>
+      <div class="card-title">Gradient Mesh<br>Animation</div>
+      <div class="card-desc">Pure CSS radial gradients animated to create organic, flowing color fields.</div>
+      <div class="card-cta">Enter Experience →</div>
     </div>
+  </a>
 
-    <div id="scroll-progress"></div>
+  <a class="card" href="02-particles.html">
+    <canvas class="card-canvas" id="particleCanvas"></canvas>
+    <span class="card-number">02</span>
+    <div class="card-content">
+      <span class="card-tag tag-canvas">Canvas</span>
+      <div class="card-title">Particle<br>System</div>
+      <div class="card-desc">Canvas rendering hundreds of particles with physics and mouse interaction.</div>
+      <div class="card-cta">Enter Experience →</div>
+    </div>
+  </a>
 
-    <!-- Background Particles -->
-    <canvas id="particles-bg"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.5;"></canvas>
+  <a class="card" href="03-typewriter.html">
+    <div class="typewriter-demo">
+      <div class="tw-line">&gt; initializing engine_</div>
+      <div class="tw-line">&gt; loading modules_</div>
+      <div class="tw-line">&gt; rendering at 60fps_</div>
+      <div class="tw-line">&gt; SYSTEM ONLINE ✓_</div>
+    </div>
+    <span class="card-number">03</span>
+    <div class="card-content">
+      <span class="card-tag tag-js">CSS ANIM</span>
+      <div class="card-title">Typewriter<br>Effect</div>
+      <div class="card-desc">CSS keyframe animation with steps() timing simulating a terminal.</div>
+      <div class="card-cta">Enter Experience →</div>
+    </div>
+  </a>
 
-    <nav class="glass glass-nav fade-in-down" style="animation-delay: 2.8s;">
-        <div class="brand">CORE.OS</div>
-        <div class="nav-links">
-            <a href="#work" class="nav-item">Work</a>
-            <a href="#skills" class="nav-item">Expertise</a>
-            <a href="#about" class="nav-item">Identity</a>
-            <a href="#contact" class="nav-item">Signal</a>
-        </div>
-        <button class="btn-minimal">Initiate Project</button>
-    </nav>
+  <a class="card wide tall" href="04-svg-morph.html">
+    <svg class="morph-svg" viewBox="0 0 800 480" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="bg1" cx="50%" cy="50%"><stop offset="0%" stop-color="#ff3c00" stop-opacity="0.8"/><stop offset="100%" stop-color="#ff3c00" stop-opacity="0"/></radialGradient>
+        <radialGradient id="bg2" cx="50%" cy="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity="0.6"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="bg3" cx="50%" cy="50%"><stop offset="0%" stop-color="#b8ff57" stop-opacity="0.5"/><stop offset="100%" stop-color="#b8ff57" stop-opacity="0"/></radialGradient>
+      </defs>
+      <path fill="url(#bg1)"><animate attributeName="d" dur="8s" repeatCount="indefinite" values="M400,100 C520,60 640,160 620,280 C600,400 480,460 380,440 C280,420 180,340 200,220 C220,100 280,140 400,100Z;M420,80 C560,40 680,140 660,280 C640,420 500,490 380,460 C260,430 140,340 160,200 C180,60 280,120 420,80Z;M400,100 C520,60 640,160 620,280 C600,400 480,460 380,440 C280,420 180,340 200,220 C220,100 280,140 400,100Z"/></path>
+      <path fill="url(#bg2)"><animate attributeName="d" dur="10s" repeatCount="indefinite" values="M200,200 C300,120 460,130 500,230 C540,330 460,440 340,450 C220,460 120,390 140,300 C160,210 100,280 200,200Z;M160,220 C280,130 480,100 540,220 C600,340 500,460 360,470 C220,480 100,410 120,300 C140,190 40,310 160,220Z;M200,200 C300,120 460,130 500,230 C540,330 460,440 340,450 C220,460 120,390 140,300 C160,210 100,280 200,200Z"/></path>
+      <path fill="url(#bg3)"><animate attributeName="d" dur="12s" repeatCount="indefinite" values="M550,300 C620,220 700,250 690,360 C680,470 580,500 500,470 C420,440 390,370 430,300 C470,230 480,380 550,300Z;M570,280 C650,190 740,230 720,350 C700,470 590,510 510,480 C430,450 400,360 450,290 C500,220 490,370 570,280Z;M550,300 C620,220 700,250 690,360 C680,470 580,500 500,470 C420,440 390,370 430,300 C470,230 480,380 550,300Z"/></path>
+    </svg>
+    <span class="card-number" style="font-size:8rem;">04</span>
+    <div class="card-content">
+      <span class="card-tag tag-svg">SVG</span>
+      <div class="card-title">Organic SVG<br>Blob Morphing</div>
+      <div class="card-desc">SVG path animation interpolating between bezier curves, creating living organic shapes.</div>
+      <div class="card-cta">Enter Experience →</div>
+    </div>
+  </a>
 
-    <main>
-        <!-- Hero Section with Globe -->
-        <section id="hero" class="hero">
-            <div id="globe-container"></div>
+  <a class="card" href="05-glitch.html">
+    <div class="glitch-container">
+      <div class="glitch" data-text="GLITCH">GLITCH</div>
+    </div>
+    <span class="card-number">05</span>
+    <div class="card-content">
+      <span class="card-tag tag-css">CSS</span>
+      <div class="card-title">Glitch<br>Effect</div>
+      <div class="card-desc">CSS pseudo-elements with clip-path and offset transforms.</div>
+      <div class="card-cta">Enter Experience →</div>
+    </div>
+  </a>
 
-            <!-- HUD Info Pop-up -->
-            <div class="hud-container" id="hud-root">
-                <div id="hud-popup" class="glass hud-popup">
-                    <h4 id="hud-title">PROJECT_ID</h4>
-                    <p id="hud-desc" class="typewriter">Synchronizing data stream...</p>
-                </div>
-                <svg class="hud-connector">
-                    <path id="hud-line" class="connector-line" d="M0,0 L0,0" />
-                    <circle id="hud-dot" class="connector-dot" cx="0" cy="0" r="2" />
-                </svg>
-            </div>
+  <a class="card" href="06-clock.html">
+    <div class="clock-wrap">
+      <div class="clock">
+        <div class="hand" id="hour-hand"></div>
+        <div class="hand" id="min-hand"></div>
+        <div class="hand" id="sec-hand"></div>
+        <div class="clock-center"></div>
+      </div>
+    </div>
+    <span class="card-number">06</span>
+    <div class="card-content">
+      <span class="card-tag tag-js">JS</span>
+      <div class="card-title">Live DOM<br>Clock</div>
+      <div class="card-desc">JavaScript Date API driving real-time CSS transform rotations.</div>
+      <div class="card-cta">Enter Experience →</div>
+    </div>
+  </a>
+</div>
 
-            <div class="orbital-text-container" id="orbital-root"></div>
+<footer>
+  <div class="f-logo">WEBCRAFT / TECHEXPO</div>
+  <div class="f-tag">CREATIVE WEB TECHNOLOGIES — 2025</div>
+</footer>
 
-            <div class="hero-content">
-                <h1 class="reveal-text glitch" data-text="ARCHITECTING THE FUTURE">ARCHITECTING THE FUTURE</h1>
-                <p>UI/UX • PRODUCT DESIGN • WEB ARCHITECTURE</p>
-                <div style="margin-top: 2rem;">
-                    <button class="btn-minimal roll-in" style="transition-delay: 0.5s">Explore System</button>
-                </div>
-            </div>
-        </section>
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX - 6 + 'px';
+    cursor.style.top = e.clientY - 6 + 'px';
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a,.card').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.transform='scale(2)'; ring.style.transform='translate(-50%,-50%) scale(1.5)'; });
+    el.addEventListener('mouseleave', () => { cursor.style.transform='scale(1)'; ring.style.transform='translate(-50%,-50%) scale(1)'; });
+  });
 
-        <!-- Work Section -->
-        <section id="work">
-            <h2 class="section-title reveal-text">Selected Work</h2>
-            <div class="grid-container stagger-container">
-                <div class="card stagger-item roll-in" style="--delay: 0.1s">
-                    <h3>01. QUANTUM UI</h3>
-                    <p class="roll-in" style="transition-delay: 0.3s">Research-led design system for decentralized
-                        financial architectures. Focused on cognitive load
-                        reduction and high-density data visualization.</p>
-                </div>
-                <div class="card stagger-item roll-in" style="--delay: 0.2s">
-                    <h3>02. HYPERSPACE.WEB</h3>
-                    <p class="roll-in" style="transition-delay: 0.4s">Next-gen e-commerce engine utilizing WebGL for
-                        immersive product storytelling. 40% increase in
-                        user retention through spatial interactions.</p>
-                </div>
-                <div class="card stagger-item roll-in" style="--delay: 0.3s">
-                    <h3>03. NEURAL DASH</h3>
-                    <p class="roll-in" style="transition-delay: 0.5s">Minimalist dashboard for AI management.
-                        Prioritizing accessibility and dark-mode ergonomics for
-                        extended professional use.</p>
-                </div>
-            </div>
-        </section>
+  // Particles
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let mouse = { x: null, y: null };
+  function resizeCanvas() { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+  resizeCanvas();
+  class Particle {
+    constructor() { this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height; this.size=Math.random()*1.8+0.3; this.vx=(Math.random()-0.5)*0.6; this.vy=(Math.random()-0.5)*0.6; this.color=['#ff3c00','#00e5ff','#b8ff57','#ff80ff'][Math.floor(Math.random()*4)]; }
+    update() { this.vx*=0.98; this.vy*=0.98; this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>canvas.width)this.vx*=-1; if(this.y<0||this.y>canvas.height)this.vy*=-1; }
+    draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.globalAlpha=0.8; ctx.fill(); ctx.globalAlpha=1; }
+  }
+  for(let i=0;i<120;i++) particles.push(new Particle());
+  function animP() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{p.update();p.draw();});
+    for(let i=0;i<particles.length;i++) for(let j=i+1;j<particles.length;j++) { const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,d=Math.sqrt(dx*dx+dy*dy); if(d<70){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=particles[i].color;ctx.globalAlpha=(1-d/70)*0.2;ctx.lineWidth=0.5;ctx.stroke();ctx.globalAlpha=1;} }
+    requestAnimationFrame(animP);
+  }
+  animP();
 
-        <!-- Expertise Section -->
-        <section id="skills">
-            <h2 class="section-title reveal-text">Core Expertise</h2>
-            <div class="grid-container stagger-container">
-                <div class="card stagger-item roll-in" style="--delay: 0.1s">
-                    <h3>UI/UX STRATEGY</h3>
-                    <p class="roll-in" style="transition-delay: 0.3s">User-centric research, persona mapping, and
-                        high-fidelity prototyping. Building interfaces that
-                        solve problems through behavioral psychology.</p>
-                </div>
-                <div class="card stagger-item roll-in" style="--delay: 0.2s">
-                    <h3>FRONT-END DEV</h3>
-                    <p class="roll-in" style="transition-delay: 0.4s">Clean, semantic code using modern frameworks.
-                        Specializing in Three.js, performance optimization,
-                        and responsive architectures.</p>
-                </div>
-                <div class="card stagger-item roll-in" style="--delay: 0.3s">
-                    <h3>SYSTEM DESIGN</h3>
-                    <p class="roll-in" style="transition-delay: 0.5s">Scalable component libraries and design tokens.
-                        Ensuring visual consistency across complex
-                        multi-platform environments.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Identity Section -->
-        <section id="about">
-            <h2 class="section-title reveal-text">Identity</h2>
-            <div style="max-width: 800px; margin: 0 auto;" class="reveal-blur">
-                <p class="reveal-text"
-                    style="font-size: 1.25rem; color: var(--text-dim); border-left: 2px solid var(--primary); padding-left: 2rem; line-height: 1.8;">
-                    I am a designer-developer hybrid focused on creating high-performance digital experiences. My work
-                    bridges the gap between aesthetic theory and technical execution, delivering interfaces that feel as
-                    good as they look.
-                </p>
-            </div>
-        </section>
-
-        <!-- Signal Section -->
-        <section id="contact">
-            <h2 class="section-title reveal-text">Send Signal</h2>
-            <div class="glass card reveal-text stagger-container"
-                style="max-width: 700px; margin: 0 auto; padding: 3rem;">
-                <form id="contact-form" style="display: flex; flex-direction: column; gap: 2rem;">
-                    <input type="text" placeholder="IDENTITY" class="glass stagger-item"
-                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);">
-                    <input type="email" placeholder="ENCRYPTED EMAIL" class="glass stagger-item"
-                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);">
-                    <textarea placeholder="TRANSMISSION" rows="5" class="glass stagger-item"
-                        style="padding: 1.2rem; border: none; outline: none; color: white; background: rgba(255,255,255,0.03); font-size: 1rem; font-family: var(--font-body);"></textarea>
-                    <button type="submit" class="btn-minimal stagger-item"
-                        style="width: 100%; padding: 1.2rem; font-size: 1rem;">Transmit</button>
-                </form>
-            </div>
-        </section>
-    </main>
-
-    <!-- Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="globe.js"></script>
-    <script src="particles.js"></script>
-    <script src="app.js"></script>
+  // Clock
+  function updateClock() {
+    const now=new Date(),s=now.getSeconds(),m=now.getMinutes(),h=now.getHours()%12;
+    document.getElementById('sec-hand').style.transform=`translateX(-50%) rotate(${s*6}deg)`;
+    document.getElementById('min-hand').style.transform=`translateX(-50%) rotate(${m*6+s*0.1}deg)`;
+    document.getElementById('hour-hand').style.transform=`translateX(-50%) rotate(${h*30+m*0.5}deg)`;
+  }
+  updateClock(); setInterval(updateClock,1000);
+</script>
 </body>
-
 </html>
